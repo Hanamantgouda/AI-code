@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Multi Language Compiler</title>
+
+    <script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
+
+    <style>
+        body { margin:0; background:#1e1e1e; color:#d4d4d4; font-family:Consolas; }
+        .header { height:50px; background:#252526; display:flex; align-items:center; padding:0 15px; }
+        select, button { margin-left:10px; background:#0e639c; color:white; border:none; padding:6px; }
+        .main { display:flex; height:calc(100vh - 50px); }
+        #editor { width:65%; }
+        .output { width:35%; background:#111; padding:10px; }
+        pre { background:black; color:#0f0; height:90%; overflow:auto; padding:10px; }
+
+        .changed-line {
+    background-color: rgba(0, 255, 0, 0.25) !important;
+}
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    Language:
+    <select id="lang" onchange="changeLang()">
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+        <option value="c">C</option>
+        <option value="python">Python</option>
+    </select>
+    <button onclick="run()">▶ Run</button>
+    <button onclick="askAI()">🤖 Ask AI</button>
+    <button onclick="toggleTheme()">Dark / Light</button>
+    <button onclick="downloadCode()">Download</button>
+
+
+</div>
+
+<div class="main">
+    <div id="editor"></div>
+    <div class="output">
+        <h4>Output</h4>
+        <pre id="outputBox">Ready</pre>
+    </div>
+</div>
+
+<script>
+    let editor,isDark=!0;const templates={java:'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello Java");\n    }\n}',cpp:'#include <iostream>\nusing namespace std;\nint main(){\n    cout << "Hello C++";\n    return 0;\n}',c:'#include <stdio.h>\nint main(){\n    printf("Hello C");\n    return 0;\n}',python:'print("Hello Python")'};function changeLang(){const e=document.getElementById("lang").value;editor.setValue(templates[e]),monaco.editor.setModelLanguage(editor.getModel(),"cpp"===e?"cpp":e)}async function run(){const e=document.getElementById("outputBox");e.textContent="Running...";try{const t=await fetch("/api/execute",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({language:document.getElementById("lang").value,code:editor.getValue()})}),n=await t.json();e.textContent=n.output||"No output"}catch(t){e.textContent="❌ Error: "+t.message}}async function askAI(){const e=document.getElementById("outputBox");e.textContent="🤖 AI is fixing your code...";try{const t=await fetch("/api/ask-ai/fix-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({language:document.getElementById("lang").value,code:editor.getValue(),error:e.textContent})}),n=await t.json();if(n.fixedCode){const t=editor.getValue(),o=n.fixedCode;editor.setValue(o),highlightChangedLines(t,o),e.textContent="✅ Code fixed by AI"}else e.textContent="❌ AI could not fix the code"}catch(t){e.textContent="❌ AI Error: "+t.message}}function toggleTheme(){isDark=!isDark,monaco.editor.setTheme(isDark?"vs-dark":"vs"),document.body.style.background=isDark?"#1e1e1e":"#f5f5f5",document.body.style.color=isDark?"#d4d4d4":"#000",document.querySelector(".header").style.background=isDark?"#252526":"#e0e0e0",document.querySelector(".output").style.background=isDark?"#111":"#ffffff",document.querySelectorAll("button, select").forEach((e=>{e.style.background=isDark?"#0e639c":"#1976d2",e.style.color="#fff"})),document.querySelector("pre").style.background=isDark?"#000":"#f0f0f0",document.querySelector("pre").style.color=isDark?"#0f0":"#000"}function downloadCode(){const e=editor.getValue();let t="code.txt",n="text/plain";switch(document.getElementById("lang").value){case"java":t="Main.java",n="text/x-java-source";break;case"cpp":t="main.cpp",n="text/x-c++src";break;case"c":t="main.c",n="text/x-csrc";break;case"python":t="main.py",n="text/x-python"}const o=new Blob([e],{type:n}),a=URL.createObjectURL(o),c=document.createElement("a");c.href=a,c.download=t,document.body.appendChild(c),c.click(),document.body.removeChild(c),URL.revokeObjectURL(a)}function highlightChangedLines(e,t){const n=e.split("\n"),o=t.split("\n"),a=[];for(let e=0;e<o.length;e++)n[e]!==o[e]&&a.push({range:new monaco.Range(e+1,1,e+1,1),options:{isWholeLine:!0,className:"changed-line"}});const c=editor.deltaDecorations([],a);setTimeout((()=>{editor.deltaDecorations(c,[])}),4e3)}require.config({paths:{vs:"https://unpkg.com/monaco-editor@0.45.0/min/vs"}}),require(["vs/editor/editor.main"],(()=>{editor=monaco.editor.create(document.getElementById("editor"),{value:templates.java,language:"java",theme:"vs-dark",automaticLayout:!0})}));
+</script>
+
+</body>
+</html>
