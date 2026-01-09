@@ -321,7 +321,7 @@ async function askAI() {
             const t = editor.getValue(),
                 o = n.fixedCode;
             editor.setValue(o), highlightChangedLines(t, o), e.textContent = "✅ Code fixed by AI"
-        } else e.textContent = "❌ AI could not fix the code"
+        } else e.textContent = "Something went wrong... Try again"
     } catch (t) {
         e.textContent = "❌ AI Error: " + t.message
     }
