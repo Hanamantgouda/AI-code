@@ -76,7 +76,7 @@ public class OpenRouterController {
 
             Process p = pb.start();
 
-            boolean finished = p.waitFor(3, TimeUnit.SECONDS);
+            boolean finished = p.waitFor(60, TimeUnit.SECONDS);
             if (!finished) {
                 p.destroyForcibly();
                 res.put("output", "❌ Time limit exceeded");

@@ -7,16 +7,219 @@
     <script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
 
     <style>
-        body { margin:0; background:#1e1e1e; color:#d4d4d4; font-family:Consolas; }
-        .header { height:50px; background:#252526; display:flex; align-items:center; padding:0 15px; }
-        select, button { margin-left:10px; background:#0e639c; color:white; border:none; padding:6px; }
-        .main { display:flex; height:calc(100vh - 50px); }
-        #editor { width:65%; }
-        .output { width:35%; background:#111; padding:10px; }
-        pre { background:black; color:#0f0; height:90%; overflow:auto; padding:10px; }
+        /* ===============================
+   THEME VARIABLES (DARK DEFAULT)
+   =============================== */
+:root {
+    /* Core backgrounds */
+    --bg-main: #0b0b16;
+    --bg-header: #14142b;
+    --bg-editor: #0b0b16;
+    --bg-panel: #11112a;
+    --bg-box: #0f0f22;
 
-        .changed-line {
-    background-color: rgba(0, 255, 0, 0.25) !important;
+    /* Gradients (DARK) */
+    --bg-gradient-main: radial-gradient(circle at top, #12122a, #0b0b16);
+    --bg-gradient-header: linear-gradient(90deg, #151533, #12122b);
+    --bg-gradient-panel: linear-gradient(180deg, #11112a, #0e0e22);
+    --bg-gradient-box: linear-gradient(180deg, #0f0f22, #0a0a18);
+
+    /* Accents */
+    --accent-purple: #8b5cf6;
+    --accent-purple-soft: #a78bfa;
+    --accent-purple-hover: #7c3aed;
+    --accent-green: #22c55e;
+
+    /* Text */
+    --text-primary: #e5e7eb;
+    --text-secondary: #b3b6d4;
+    --text-muted: #9ca3af;
+
+    /* Borders & shadows */
+    --border-soft: #23234a;
+    --border-strong: #2f2f66;
+
+    --shadow-soft: 0 6px 24px rgba(0,0,0,0.45);
+    --shadow-glow: 0 0 0 1px rgba(139,92,246,0.25),
+                   0 10px 30px rgba(139,92,246,0.15);
+}
+
+/* ===============================
+   LIGHT THEME OVERRIDES
+   =============================== */
+body.light-theme {
+    --bg-main: #f5f6fa;
+    --bg-header: #ffffff;
+    --bg-editor: #ffffff;
+    --bg-panel: #f1f3f9;
+    --bg-box: #ffffff;
+
+    /* Gradients (LIGHT) */
+    --bg-gradient-main: radial-gradient(circle at top, #ffffff, #f5f6fa);
+    --bg-gradient-header: linear-gradient(90deg, #ffffff, #f0f1f8);
+    --bg-gradient-panel: linear-gradient(180deg, #f9fafb, #eef1f6);
+    --bg-gradient-box: linear-gradient(180deg, #ffffff, #f3f4f6);
+
+    /* Text */
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+
+    /* Borders & shadows */
+    --border-soft: #d1d5db;
+    --border-strong: #c7c9d1;
+
+    --shadow-soft: 0 6px 18px rgba(0,0,0,0.12);
+    --shadow-glow: 0 0 0 1px rgba(139,92,246,0.25),
+                   0 8px 20px rgba(139,92,246,0.15);
+}
+
+/* ===============================
+   GLOBAL
+   =============================== */
+body {
+    margin: 0;
+    background: var(--bg-gradient-main);
+    color: var(--text-primary);
+    font-family: Consolas, "Fira Code", monospace;
+    overflow: hidden;
+}
+
+/* ===============================
+   HEADER
+   =============================== */
+.header {
+    height: 56px;
+    background: var(--bg-gradient-header);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-soft);
+    z-index: 10;
+}
+
+/* ===============================
+   CONTROLS
+   =============================== */
+select,
+button {
+    margin-left: 10px;
+    background: linear-gradient(
+        135deg,
+        var(--accent-purple),
+        var(--accent-purple-hover)
+    );
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+select {
+    background: var(--bg-box);
+    color: var(--text-primary);
+    border: 1px solid var(--border-soft);
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow);
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* ===============================
+   MAIN LAYOUT
+   =============================== */
+.main {
+    display: flex;
+    height: calc(100vh - 56px);
+}
+
+/* ===============================
+   EDITOR
+   =============================== */
+#editor {
+    width: 65%;
+    background: var(--bg-editor);
+    border-right: 1px solid var(--border-strong);
+}
+
+/* ===============================
+   OUTPUT PANEL
+   =============================== */
+.output {
+    width: 35%;
+    background: var(--bg-gradient-panel);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position:relative;
+}
+
+/* ===============================
+   SECTION TITLES
+   =============================== */
+.output h4 {
+    margin: 4px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-purple-soft);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+/* ===============================
+   OUTPUT / COMPLEXITY BOXES
+   =============================== */
+pre {
+    background: var(--bg-gradient-box);
+    color: var(--accent-green);
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-soft);
+    font-size: 13px;
+    line-height: 1.55;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02),
+                var(--shadow-soft);
+}
+
+/* ===============================
+   AI CHANGED LINE
+   =============================== */
+.changed-line {
+    background: linear-gradient(
+        90deg,
+        rgba(34, 197, 94, 0.35),
+        rgba(34, 197, 94, 0.12)
+    ) !important;
+    border-left: 4px solid var(--accent-green);
+}
+
+/* ===============================
+   SCROLLBARS
+   =============================== */
+pre::-webkit-scrollbar {
+    width: 8px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background: #3b3b6a;
+    border-radius: 10px;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-purple);
 }
 
     </style>
@@ -36,6 +239,8 @@
     <button onclick="askAI()">🤖 Ask AI</button>
     <button onclick="toggleTheme()">Dark / Light</button>
     <button onclick="downloadCode()">Download</button>
+    <button onclick="viewComplexity()">📊 View Complexity</button>
+
 
 
 </div>
@@ -44,12 +249,173 @@
     <div id="editor"></div>
     <div class="output">
         <h4>Output</h4>
-        <pre id="outputBox">Ready</pre>
+        <pre id="outputBox">Click Run</pre>
+
+        <h4>Time & Space Complexity</h4>
+        <pre id="complexityBox">Click View Complexity</pre>
     </div>
 </div>
 
 <script>
-    let editor,isDark=!0;const templates={java:'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello Java");\n    }\n}',cpp:'#include <iostream>\nusing namespace std;\nint main(){\n    cout << "Hello C++";\n    return 0;\n}',c:'#include <stdio.h>\nint main(){\n    printf("Hello C");\n    return 0;\n}',python:'print("Hello Python")'};function changeLang(){const e=document.getElementById("lang").value;editor.setValue(templates[e]),monaco.editor.setModelLanguage(editor.getModel(),"cpp"===e?"cpp":e)}async function run(){const e=document.getElementById("outputBox");e.textContent="Running...";try{const t=await fetch("/api/execute",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({language:document.getElementById("lang").value,code:editor.getValue()})}),n=await t.json();e.textContent=n.output||"No output"}catch(t){e.textContent="❌ Error: "+t.message}}async function askAI(){const e=document.getElementById("outputBox");e.textContent="🤖 AI is fixing your code...";try{const t=await fetch("/api/ask-ai/fix-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({language:document.getElementById("lang").value,code:editor.getValue(),error:e.textContent})}),n=await t.json();if(n.fixedCode){const t=editor.getValue(),o=n.fixedCode;editor.setValue(o),highlightChangedLines(t,o),e.textContent="✅ Code fixed by AI"}else e.textContent="❌ AI could not fix the code"}catch(t){e.textContent="❌ AI Error: "+t.message}}function toggleTheme(){isDark=!isDark,monaco.editor.setTheme(isDark?"vs-dark":"vs"),document.body.style.background=isDark?"#1e1e1e":"#f5f5f5",document.body.style.color=isDark?"#d4d4d4":"#000",document.querySelector(".header").style.background=isDark?"#252526":"#e0e0e0",document.querySelector(".output").style.background=isDark?"#111":"#ffffff",document.querySelectorAll("button, select").forEach((e=>{e.style.background=isDark?"#0e639c":"#1976d2",e.style.color="#fff"})),document.querySelector("pre").style.background=isDark?"#000":"#f0f0f0",document.querySelector("pre").style.color=isDark?"#0f0":"#000"}function downloadCode(){const e=editor.getValue();let t="code.txt",n="text/plain";switch(document.getElementById("lang").value){case"java":t="Main.java",n="text/x-java-source";break;case"cpp":t="main.cpp",n="text/x-c++src";break;case"c":t="main.c",n="text/x-csrc";break;case"python":t="main.py",n="text/x-python"}const o=new Blob([e],{type:n}),a=URL.createObjectURL(o),c=document.createElement("a");c.href=a,c.download=t,document.body.appendChild(c),c.click(),document.body.removeChild(c),URL.revokeObjectURL(a)}function highlightChangedLines(e,t){const n=e.split("\n"),o=t.split("\n"),a=[];for(let e=0;e<o.length;e++)n[e]!==o[e]&&a.push({range:new monaco.Range(e+1,1,e+1,1),options:{isWholeLine:!0,className:"changed-line"}});const c=editor.deltaDecorations([],a);setTimeout((()=>{editor.deltaDecorations(c,[])}),4e3)}require.config({paths:{vs:"https://unpkg.com/monaco-editor@0.45.0/min/vs"}}),require(["vs/editor/editor.main"],(()=>{editor=monaco.editor.create(document.getElementById("editor"),{value:templates.java,language:"java",theme:"vs-dark",automaticLayout:!0})}));
+    let editor, isDark = !0;
+const templates = {
+    java: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello Java");\n    }\n}',
+    cpp: '#include <iostream>\nusing namespace std;\nint main(){\n    cout << "Hello C++";\n    return 0;\n}',
+    c: '#include <stdio.h>\nint main(){\n    printf("Hello C");\n    return 0;\n}',
+    python: 'print("Hello Python")'
+};
+
+function changeLang() {
+    const e = document.getElementById("lang").value;
+    editor.setValue(templates[e]), monaco.editor.setModelLanguage(editor.getModel(), "cpp" === e ? "cpp" : e)
+}
+async function run() {
+    const e = document.getElementById("outputBox");
+    const loaderSVG = `<svg fill="hsl(228, 97%, 42%)" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2,12A10.94,10.94,0,0,1,5,4.65c-.21-.19-.42-.36-.62-.55h0A11,11,0,0,0,12,23c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"><animateTransform attributeName="transform" type="rotate" dur="0.6s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path></svg>`;
+
+    e.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+      ${loaderSVG.replace(
+          '<svg',
+          '<svg style="width:32px;height:32px;"'
+      )}
+  </div>
+`;
+
+
+
+    try {
+        const t = await fetch("/api/execute", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    language: document.getElementById("lang").value,
+                    code: editor.getValue()
+                })
+            }),
+            n = await t.json();
+        e.textContent = n.output || "No output"
+    } catch (t) {
+        e.textContent = "❌ Error: " + t.message
+    }
+}
+async function askAI() {
+    const e = document.getElementById("outputBox");
+    e.textContent = "🤖 AI is fixing your code...";
+    try {
+        const t = await fetch("/api/ask-ai/fix-code", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    language: document.getElementById("lang").value,
+                    code: editor.getValue(),
+                    error: e.textContent
+                })
+            }),
+            n = await t.json();
+        if (n.fixedCode) {
+            const t = editor.getValue(),
+                o = n.fixedCode;
+            editor.setValue(o), highlightChangedLines(t, o), e.textContent = "✅ Code fixed by AI"
+        } else e.textContent = "❌ AI could not fix the code"
+    } catch (t) {
+        e.textContent = "❌ AI Error: " + t.message
+    }
+}
+
+function toggleTheme() {
+    isDark = !isDark, document.body.classList.toggle("light-theme", !isDark), monaco.editor.setTheme(isDark ? "vs-dark" : "vs")
+}
+
+function downloadCode() {
+    const e = editor.getValue();
+    let t = "code.txt",
+        n = "text/plain";
+    switch (document.getElementById("lang").value) {
+        case "java":
+            t = "Main.java", n = "text/x-java-source";
+            break;
+        case "cpp":
+            t = "main.cpp", n = "text/x-c++src";
+            break;
+        case "c":
+            t = "main.c", n = "text/x-csrc";
+            break;
+        case "python":
+            t = "main.py", n = "text/x-python"
+    }
+    const o = new Blob([e], {
+            type: n
+        }),
+        a = URL.createObjectURL(o),
+        i = document.createElement("a");
+    i.href = a, i.download = t, document.body.appendChild(i), i.click(), document.body.removeChild(i), URL.revokeObjectURL(a)
+}
+
+function highlightChangedLines(e, t) {
+    const n = e.split("\n"),
+        o = t.split("\n"),
+        a = [];
+    for (let e = 0; e < o.length; e++) n[e] !== o[e] && a.push({
+        range: new monaco.Range(e + 1, 1, e + 1, 1),
+        options: {
+            isWholeLine: !0,
+            className: "changed-line"
+        }
+    });
+    const i = editor.deltaDecorations([], a);
+    setTimeout((() => {
+        editor.deltaDecorations(i, [])
+    }), 4e3)
+}
+require.config({
+    paths: {
+        vs: "https://unpkg.com/monaco-editor@0.45.0/min/vs"
+    }
+}), require(["vs/editor/editor.main"], (() => {
+    editor = monaco.editor.create(document.getElementById("editor"), {
+        value: templates.java,
+        language: "java",
+        theme: "vs-dark",
+        automaticLayout: !0
+    })
+}));
+async function viewComplexity() {
+
+
+
+
+
+    const box = document.getElementById("complexityBox");
+    box.textContent = "📊 Analyzing time & space complexity...";
+
+    try {
+        const res = await fetch("/api/complexity", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                language: document.getElementById("lang").value,
+                code: editor.getValue()
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.complexity) {
+            box.textContent = data.complexity;
+        } else {
+            box.textContent = "❌ Unable to analyze complexity";
+        }
+
+    } catch (err) {
+        box.textContent = "❌ Error: " + err.message;
+    }
+}
+
 </script>
 
 </body>
