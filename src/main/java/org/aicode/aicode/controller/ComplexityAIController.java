@@ -14,7 +14,7 @@ public class ComplexityAIController {
     @Value("${openrouter.api.key}")
     private String OPENROUTER_API_KEY;
 
-    private static final String MODEL = "mistralai/mistral-7b-instruct";
+    private static final String MODEL = "stepfun/step-3.5-flash:free";
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
     @PostMapping("/complexity")
